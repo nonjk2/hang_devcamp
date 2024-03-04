@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,59 +22,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import NextArrow from "./icon/NextArrow";
+import { Passwordfields, Signfields, SignformSchema } from "@/lib/constant";
+import SignFormItem from "./SignFormItem";
 
-const formSchema = z
-  .object({
-    이름: z.string().min(2, { message: "이름은 2글자 이상이어야 합니다." }),
-    이메일: z.string().email({ message: "올바른 이메일을 입력해주세요." }),
-    연락처: z
-      .string()
-      .regex(/^[0-9]{10,11}$/, { message: "연락처는 11자리여야 합니다." }),
-    역할: z.enum(["관리자", "일반사용자"], {
-      required_error: "역할을 선택해주세요.",
-    }),
-    비밀번호: z
-      .string()
-      .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." })
-      .optional(),
-    비밀번호확인: z
-      .string()
-      .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." })
-      .optional(),
-  })
-  .refine((data) => data.비밀번호 === data.비밀번호확인, {
-    message: "비밀번호가 일치하지 않습니다.",
-    path: ["비밀번호확인"],
-  });
-
-const fields = [
-  {
-    name: "이름",
-    placeholder: "홍길동",
-  },
-  {
-    name: "이메일",
-    placeholder: "hello@sparta-devcamp.com",
-  },
-  {
-    name: "연락처",
-    placeholder: "01000000000",
-  },
-];
-const Passwordfields = [
-  {
-    name: "비밀번호",
-  },
-  {
-    name: "비밀번호확인",
-  },
-];
 export function ProfileForm() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof SignformSchema>>({
+    resolver: zodResolver(SignformSchema),
     mode: "all",
     defaultValues: {
       이름: "",
@@ -87,34 +42,33 @@ export function ProfileForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    alert(
-      JSON.stringify({
-        email: values.이메일,
-        phone: values.연락처,
-        username: values.이름,
-        role: values.역할,
-        password: values.비밀번호,
-        confirmPassword: values.비밀번호확인,
-      })
-    );
-  }
-  useEffect(() => {
-    console.log(currentStep);
-  }, [currentStep]);
-  const handleNextStep = () => {
-    // 현재 단계가 1단계이고 필수 필드가 모두 입력되었는지 확인
-    const { watch } = form;
-    form.handleSubmit(onSubmit)();
+  function onSubmit(values: z.infer<typeof SignformSchema>) {
+    switch (currentStep) {
+      case 1:
+        return () => {
+          setCurrentStep(2);
+        };
+      case 2:
+        alert(
+          JSON.stringify({
+            email: values.이메일,
+            phone: values.연락처,
+            username: values.이름,
+            role: values.역할,
+            password: values.비밀번호,
+            confirmPassword: values.비밀번호확인,
+          })
+        );
 
-    if (
-      currentStep === 1 &&
-      watch("이름") &&
-      watch("이메일") &&
-      watch("연락처") &&
-      watch("역할")
-    ) {
+      default:
+        break;
+    }
+  }
+
+  const handleNextStep = async () => {
+    const { trigger } = form;
+    const isStep1Valid = await trigger(["이름", "이메일", "연락처", "역할"]);
+    if (currentStep === 1 && isStep1Valid) {
       setCurrentStep(2);
     }
   };
@@ -130,73 +84,38 @@ export function ProfileForm() {
               currentStep === 1 ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            {fields.map(({ name, placeholder }) => (
-              <FormField
+            {Signfields.map(({ name, placeholder }) => (
+              <SignFormItem
+                form={form}
+                name={name}
                 key={name}
-                control={form.control}
-                name={name as "이름" | "이메일" | "연락처"}
-                render={({ field, fieldState: { error } }) => (
-                  <FormItem>
-                    <FormLabel className={error && "text-red-600"}>
-                      {field.name}
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder={placeholder} {...field} />
-                    </FormControl>
-                    {error && <FormMessage>{error.message}</FormMessage>}
-                  </FormItem>
-                )}
+                placeholder={placeholder}
+                type="text"
               />
             ))}
-            <FormField
-              control={form.control}
+            <SignFormItem
+              form={form}
               name={"역할"}
-              render={({
-                field: { onChange, value, name },
-                fieldState: { error },
-              }) => (
-                <FormItem>
-                  <FormLabel className={error && "text-red-600"}>
-                    {name}
-                  </FormLabel>
-                  <FormControl className="w-full">
-                    <Select value={value} onValueChange={onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={"역할을 선택해주세요"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="일반사용자">일반사용자</SelectItem>
-                        <SelectItem value="관리자">관리자</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  {error && <FormMessage>{error.message}</FormMessage>}
-                </FormItem>
-              )}
+              type="select"
+              options={[
+                { label: "일반사용자", value: "일반사용자" },
+                { label: "관리자", value: "관리자" },
+              ]}
+              placeholder="역할을 선택해주세요"
             />
           </div>
 
           <div
             className={`transition-transform duration-500 absolute top-0 right-0 left-0 w-full ${
-              currentStep === 2 ? "translate-x-0" : "-translate-x-[120%]"
+              currentStep === 1 ? "translate-x-[120%]" : "translate-x-0"
             }`}
           >
             {Passwordfields.map(({ name }) => (
-              <FormField
+              <SignFormItem
+                form={form}
+                name={name}
                 key={name}
-                control={form.control}
-                name={name as "비밀번호" | "비밀번호확인"}
-                render={({ field, fieldState: { error } }) => (
-                  <FormItem>
-                    <FormLabel className={error && "text-red-600"}>
-                      {field.name}
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    {error && <FormMessage>{error.message}</FormMessage>}
-                  </FormItem>
-                )}
+                type="password"
               />
             ))}
           </div>
