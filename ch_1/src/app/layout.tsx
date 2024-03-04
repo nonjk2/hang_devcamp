@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Inter as FontSans } from "next/font/google";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 
 import { ModeToggle } from "@/components/DarkModeBtn";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           disableTransitionOnChange
         >
           <ModeToggle />
-          {children}
+          <Suspense>{children}</Suspense>
         </ThemeProvider>
       </body>
     </html>

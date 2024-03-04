@@ -15,7 +15,6 @@ export function ProfileForm() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const form = useForm<z.infer<typeof SignformSchema>>({
     resolver: zodResolver(SignformSchema),
-    mode: "all",
     defaultValues: {
       이름: "",
       이메일: "",
