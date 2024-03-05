@@ -4,7 +4,7 @@ import { Inter as FontSans } from "next/font/google";
 import { ReactNode, Suspense } from "react";
 
 import { ModeToggle } from "@/components/DarkModeBtn";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import Provider from "./providers";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -24,15 +24,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontSans.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Provider>
           <ModeToggle />
           <Suspense>{children}</Suspense>
-        </ThemeProvider>
+        </Provider>
       </body>
     </html>
   );
