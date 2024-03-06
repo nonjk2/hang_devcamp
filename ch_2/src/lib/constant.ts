@@ -57,4 +57,11 @@ const SignformSchema = z
     path: ["비밀번호확인"],
   });
 
-export { Signfields, SignformSchema, Passwordfields };
+const SignInFormSchema = z.object({
+  이메일: z.string().email({ message: "올바른 이메일을 입력해주세요." }),
+  비밀번호: z
+    .string()
+    .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." }),
+});
+
+export { Signfields, SignformSchema, Passwordfields, SignInFormSchema };
