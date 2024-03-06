@@ -6,12 +6,16 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import NextArrow from "./icon/NextArrow";
 import { Passwordfields, Signfields, SignformSchema } from "@/lib/constant";
 import SignFormItem from "./SignFormItem";
+import { useFormState, useFormStatus } from "react-dom";
+import { SignAction } from "@/lib/action/auth/action";
 
 export function ProfileForm() {
+  const { pending } = useFormStatus();
+  const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const form = useForm<z.infer<typeof SignformSchema>>({
     resolver: zodResolver(SignformSchema),
@@ -25,43 +29,37 @@ export function ProfileForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof SignformSchema>) {
-    switch (currentStep) {
-      case 1:
-        return () => {
-          setCurrentStep(2);
-        };
-      case 2:
-        alert(
-          JSON.stringify({
-            email: values.이메일,
-            phone: values.연락처,
-            username: values.이름,
-            role: values.역할,
-            password: values.비밀번호,
-            confirmPassword: values.비밀번호확인,
-          })
-        );
+  const onSubmit = form.handleSubmit(
+    (values: z.infer<typeof SignformSchema>) => {
+      startTransition(() => {
+        switch (currentStep) {
+          case 1:
+            setCurrentStep(2);
 
-      default:
-        break;
+          case 2:
+            SignAction(values);
+          default:
+            break;
+        }
+      });
     }
-  }
+  );
+
+  // const onSubmit = (values: z.infer<typeof SignformSchema>) => {
+
+  // };
 
   const handleNextStep = async () => {
     const { trigger } = form;
     const isStep1Valid = await trigger(["이름", "이메일", "연락처", "역할"]);
     if (currentStep === 1 && isStep1Valid) {
-      setCurrentStep(2);
+      return setCurrentStep(2);
     }
   };
   return (
     <>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="relative overflow-hidden"
-        >
+        <form onSubmit={onSubmit} className="relative overflow-hidden">
           <div
             className={`transition-transform w-full duration-500 space-y-4 ${
               currentStep === 1 ? "translate-x-0" : "-translate-x-full"
@@ -89,7 +87,7 @@ export function ProfileForm() {
           </div>
 
           <div
-            className={`transition-transform duration-500 absolute top-0 right-0 left-0 w-full ${
+            className={`space-y-4 transition-transform duration-500 absolute top-0 right-0 left-0 w-full ${
               currentStep === 1 ? "translate-x-[120%]" : "translate-x-0"
             }`}
           >
@@ -114,7 +112,7 @@ export function ProfileForm() {
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button type="submit" className="mt-3">
+              <Button type="submit" className="mt-3" disabled={isPending}>
                 계정 등록하기
               </Button>
               <Button

@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Input } from "./ui/input";
+import DynamicInput from "./ui/dynamicInput";
 
 interface Option {
   value: string;
@@ -28,6 +29,7 @@ interface SignFormItemProps {
   placeholder?: string;
   type?: "text" | "password" | "select";
   options?: Option[];
+  disabled?: boolean;
 }
 
 const SignFormItem = ({
@@ -36,6 +38,7 @@ const SignFormItem = ({
   placeholder = "",
   options,
   type = "text",
+  disabled = false,
 }: SignFormItemProps) => {
   const renderFormControl = (
     type: string,
@@ -61,9 +64,11 @@ const SignFormItem = ({
         );
       case "text":
         return (
-          <Input
+          <DynamicInput
             {...field}
+            label={name}
             ref={field.ref}
+            disabled={disabled}
             placeholder={placeholder}
             type={type}
             autoFocus={false}
@@ -72,8 +77,9 @@ const SignFormItem = ({
       case "password":
       default:
         return (
-          <Input
+          <DynamicInput
             {...field}
+            label={name}
             ref={field.ref}
             placeholder={placeholder}
             type={type}
@@ -90,9 +96,6 @@ const SignFormItem = ({
       name={name as "이름" | "이메일" | "연락처"}
       render={({ field, fieldState: { error } }) => (
         <FormItem>
-          <FormLabel className={error && "text-red-600"}>
-            {field.name}
-          </FormLabel>
           <FormControl>
             {renderFormControl(type, field, placeholder, options)}
           </FormControl>
