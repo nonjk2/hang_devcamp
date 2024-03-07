@@ -12,11 +12,13 @@ import { Passwordfields, Signfields, SignformSchema } from "@/lib/constant";
 import SignFormItem from "./SignFormItem";
 import { useFormState, useFormStatus } from "react-dom";
 import { SignAction } from "@/lib/action/auth/action";
+import { useRouter } from "next/navigation";
 
 export function ProfileForm() {
   const { pending } = useFormStatus();
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const router = useRouter();
   const form = useForm<z.infer<typeof SignformSchema>>({
     resolver: zodResolver(SignformSchema),
     defaultValues: {
@@ -102,14 +104,24 @@ export function ProfileForm() {
           </div>
 
           {currentStep === 1 ? (
-            <Button
-              type="button"
-              onClick={handleNextStep}
-              className="font-bold mt-3"
-            >
-              {"다음 단계로"}
-              <NextArrow />
-            </Button>
+            <div className="flex gap-2 justify-between">
+              <Button
+                type="button"
+                onClick={() => router.back()}
+                className="font-bold mt-3"
+                variant={"ghost"}
+              >
+                {"이전"}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNextStep}
+                className="font-bold mt-3"
+              >
+                {"다음 단계로"}
+                <NextArrow />
+              </Button>
+            </div>
           ) : (
             <div className="flex gap-2">
               <Button type="submit" className="mt-3" disabled={isPending}>
