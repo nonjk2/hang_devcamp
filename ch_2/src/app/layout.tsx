@@ -6,6 +6,8 @@ import { ReactNode, Suspense } from "react";
 import { ModeToggle } from "@/components/DarkModeBtn";
 import Provider from "./providers";
 import { MSWComponent } from "@/lib/msw/MswHooks";
+import { getServerSession } from "next-auth";
+import { authOption } from "./api/auth/[...nextauth]/route";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -15,7 +17,9 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const session = await getServerSession(authOption);
+  // console.log("session : ", session);
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
