@@ -71,6 +71,7 @@ const DynamicInput = forwardRef<HTMLInputElement, InputProps>(
                 ref={ref}
                 disabled={disabled}
                 required={required}
+                autoFocus={autoFocus}
                 type={type}
                 placeholder={active ? placeholder : ""}
                 onFocus={() => setActive(true)}

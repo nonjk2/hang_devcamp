@@ -83,7 +83,7 @@ const SignFormItem = ({
             ref={field.ref}
             placeholder={placeholder}
             type={type}
-            autoFocus={false}
+            // autoFocus={false}
             autoComplete={`${type !== "password"}`}
           />
         );
@@ -93,7 +93,7 @@ const SignFormItem = ({
     <FormField
       key={name}
       control={form.control}
-      name={name as "이름" | "이메일" | "연락처"}
+      name={name as "이름" | "이메일" | "연락처" | "비밀번호" | "비밀번호확인"}
       render={({ field, fieldState: { error } }) => (
         <FormItem>
           <FormControl>

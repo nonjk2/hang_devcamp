@@ -14,7 +14,7 @@ export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
     name: formData.이름,
     email: formData.이메일,
     phone: formData.연락처,
-    rule: formData.역할,
+    role: formData.역할,
     password: formData.비밀번호,
   };
 
@@ -23,7 +23,7 @@ export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
     body,
     method: "POST",
   });
-  if (res.status === 200) {
+  if (res.status === "success") {
     await setTimeout(2000);
   }
 };
