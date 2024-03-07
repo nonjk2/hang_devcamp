@@ -4,25 +4,17 @@ import { faker } from "@faker-js/faker";
 const User: User[] = [
   {
     id: "87e9fba7-3733-400b-bb88-866e0fe24541",
-    nickname: "Alice",
+    nickname: "eundol",
     image: faker.image.avatar(),
-    Followers: [
-      { id: "020615f3-87f9-4422-9f92-217b32f25f47" },
-      { id: "70f007f5-b16e-4cbc-a00b-3edca6c154a8" },
-    ],
-    _count: {
-      Followers: 2,
-      Followings: 4,
-    },
+    email: "test@test.com",
+    role: "admin",
   },
 ];
-
-const Posts = [];
 
 export const handlers = [
   http.post("/api/login", () => {
     console.log("로그인");
-    return HttpResponse.json(User[1], {
+    return HttpResponse.json(User[0], {
       headers: {
         "Set-Cookie": "connect.sid=msw-cookie;HttpOnly;Path=/",
       },
@@ -46,5 +38,19 @@ export const handlers = [
         "Set-Cookie": "connect.sid=msw-cookie;HttpOnly;Path=/;Max-Age=0",
       },
     });
+  }),
+  http.post("/api/token", async () => {
+    // 임의의 토큰 생성
+    const fakeToken = faker.string;
+
+    console.log("토큰 발급");
+    return HttpResponse.json(
+      { token: fakeToken },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }),
 ];
