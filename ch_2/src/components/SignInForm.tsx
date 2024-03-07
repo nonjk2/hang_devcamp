@@ -10,11 +10,13 @@ import { Icons } from "./icon";
 import SignFormItem from "./SignFormItem";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const SignInForm = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const router = useRouter();
   const form = useForm<z.infer<typeof SignInFormSchema>>({
+    mode: "onSubmit",
     resolver: zodResolver(SignInFormSchema),
     defaultValues: {
       이메일: "",
@@ -22,28 +24,64 @@ const SignInForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof SignInFormSchema>) => {
-    console.log(values);
-  };
+  const onSubmit = form.handleSubmit(
+    async (values: z.infer<typeof SignInFormSchema>) => {
+      try {
+        const res = await signIn("credentials", {
+          email: values.이메일,
+          password: values.비밀번호,
+          redirect: false,
+        });
+        if (res?.ok) {
+          router.push("/home");
+        }
+      } catch (error) {
+        throw new Error(error as any);
+      }
+    }
+  );
 
   const handleSignInStep = async () => {
     const { trigger } = form;
     const isStep1Valid = await trigger(["이메일"]);
+
     if (currentStep === 1 && isStep1Valid) {
-      return setCurrentStep(2);
+      setCurrentStep(2);
     }
   };
+
+  const onClickSocialLogin = async (type: "google" | "github") => {
+    console.log(type);
+    try {
+      const res = await signIn(type, {});
+
+      if (res?.ok) {
+        // router.push("/home");
+      }
+    } catch (error) {
+      throw new Error(error as any);
+    }
+  };
+
   return (
     <>
       <CardContent className="grid gap-4 pb-4">
         {currentStep === 1 && (
           <>
             <div className="grid grid-cols-2 gap-6">
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => onClickSocialLogin("github")}
+              >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
               </Button>
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => onClickSocialLogin("google")}
+              >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
@@ -62,10 +100,7 @@ const SignInForm = () => {
           </>
         )}
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="relative overflow-hidden"
-          >
+          <form onSubmit={onSubmit} className="relative overflow-hidden">
             <div
               className={`transition-transform w-full duration-500 space-y-4 `}
             >
@@ -76,41 +111,44 @@ const SignInForm = () => {
                 disabled={currentStep === 2}
               />
 
-              <SignFormItem form={form} name={"비밀번호"} type="password" />
+              {currentStep === 2 && (
+                <SignFormItem form={form} name={"비밀번호"} type="password" />
+              )}
             </div>
-
-            <div
-              className={`space-y-4 transition-transform duration-500 absolute top-0 right-0 left-0 w-full`}
-            ></div>
+            <CardFooter className="w-full flex flex-col gap-2 pb-0 px-0 pt-4 mt-2">
+              {currentStep === 1 ? (
+                <>
+                  <Button
+                    className="w-full"
+                    type="button"
+                    onClick={handleSignInStep}
+                  >
+                    다음
+                  </Button>
+                  <Button
+                    className="w-full"
+                    type="button"
+                    onClick={() => router.push("/signup")}
+                  >
+                    이메일로 회원가입
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button className="w-full" type="submit">
+                    로그인
+                  </Button>
+                  <Button
+                    className="w-full"
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                  >
+                    이전
+                  </Button>
+                </>
+              )}
+            </CardFooter>
           </form>
-          <CardFooter className="w-full flex flex-col gap-2 pb-0 px-0">
-            {currentStep === 1 ? (
-              <>
-                <Button
-                  className="w-full"
-                  type="button"
-                  onClick={handleSignInStep}
-                >
-                  다음
-                </Button>
-                <Button
-                  className="w-full"
-                  onClick={() => router.push("/signup")}
-                >
-                  회원가입
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button className="w-full" type="submit">
-                  로그인
-                </Button>
-                <Button className="w-full" onClick={() => setCurrentStep(1)}>
-                  이전
-                </Button>
-              </>
-            )}
-          </CardFooter>
         </Form>
       </CardContent>
     </>
