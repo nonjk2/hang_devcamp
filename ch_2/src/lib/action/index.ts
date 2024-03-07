@@ -15,19 +15,27 @@ type FetchOptions = {
   cache?: RequestCache;
   path?: string;
 };
+
+type Success<T> = {
+  status: "success";
+  data: T;
+};
+
+type Failure = {
+  status: "failure";
+  error: string;
+};
+
+type Result<T> = Success<T> | Failure;
+
 export async function CombineFetch<T>({
   path,
   method = "GET",
   headers,
   body,
   cache = "default",
-}: FetchOptions): Promise<{
-  status: number;
-  body: T | { message: string };
-}> {
+}: FetchOptions): Promise<Result<T>> {
   const endpoint = `${domain}${path}`;
-  console.log(body);
-  console.log(endpoint);
   try {
     const result = await fetch(endpoint, {
       method,
@@ -39,20 +47,18 @@ export async function CombineFetch<T>({
       body: JSON.stringify(body),
       cache,
     });
+
     if (!result.ok) {
-      return handleHttpError(result);
+      return {
+        status: "failure",
+        error:
+          (await handleHttpError(result)).body.message ||
+          "Fetch request failed",
+      };
     }
 
-    const ResponseBody = await result.json();
-
-    // if (ResponseBody.errors) {
-    //   throw ResponseBody.errors[0];
-    // }
-
-    return {
-      status: result.status,
-      body: ResponseBody,
-    };
+    const ResponseBody: T = await result.json();
+    return { status: "success", data: ResponseBody };
   } catch (e) {
     if (isError(e)) {
       throw {
