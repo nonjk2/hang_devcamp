@@ -1,15 +1,17 @@
 "use server";
 
-import { SignformSchema } from "@/lib/constant";
+import { SignformSchema, supabaseAnon, supabaseURL } from "@/lib/constant";
 import { redirect } from "next/navigation";
 import { setTimeout } from "timers/promises";
 import { z } from "zod";
 import { CombineFetch } from "..";
+import { createClient } from "@supabase/supabase-js";
+import { RoleTypeName, RoleTypeNameConvert } from "@/lib/types/enum";
 
 export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
-  // try {
-  // } catch (error) {}
-  // redirect("/home");
+  const supabase = createClient(supabaseURL, supabaseAnon, {
+    db: { schema: "next-auth" },
+  });
   const body = {
     name: formData.이름,
     email: formData.이메일,
@@ -18,12 +20,32 @@ export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
     password: formData.비밀번호,
   };
 
-  const res = await CombineFetch<any>({
-    path: "/api/users",
-    body,
-    method: "POST",
+  const { email, password, role, phone, name } = body;
+
+  const { error, data } = await supabase.auth.signUp({
+    email,
+    password,
+    phone,
+    options: {
+      data: {
+        name,
+        role: RoleTypeNameConvert[role] ?? "user",
+      },
+    },
   });
-  if (res.status === "success") {
-    await setTimeout(2000);
+
+  if (error) {
+    throw new Error(error.message);
   }
+  console.log(data);
+  // redirect("/");
+  // const res = await CombineFetch<any>({
+  //   path: "/api/users",
+  //   body,
+  //   method: "POST",
+  // });
+
+  // if (res.status === "success") {
+  //   await setTimeout(2000);
+  // }
 };

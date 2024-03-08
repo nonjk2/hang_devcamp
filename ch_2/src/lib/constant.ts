@@ -42,8 +42,7 @@ const SignformSchema = z
       .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." })
       .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
         message: "비밀번호는 숫자, 영문자, 특수문자를 포함해야 합니다.",
-      })
-      .optional(),
+      }),
     비밀번호확인: z
       .string()
       .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." })
@@ -63,5 +62,23 @@ const SignInFormSchema = z.object({
     .string()
     .min(8, { message: "비밀번호는 8 자리 이상이어야합니다." }),
 });
-
-export { Signfields, SignformSchema, Passwordfields, SignInFormSchema };
+const googleClientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+const googleClientSecret = process.env.NEXT_PUBLIC_GOOGLE_SECRET_ID ?? "";
+const githubClientID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? "";
+const githubClientSecret = process.env.NEXT_PUBLIC_GITHUB_SECRET_ID ?? "";
+const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseKEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+export {
+  Signfields,
+  SignformSchema,
+  Passwordfields,
+  SignInFormSchema,
+  googleClientID,
+  googleClientSecret,
+  githubClientID,
+  githubClientSecret,
+  supabaseURL,
+  supabaseKEY,
+  supabaseAnon,
+};
