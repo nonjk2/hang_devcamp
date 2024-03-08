@@ -3,16 +3,32 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
+import { SupabaseAdapter } from "@auth/supabase-adapter";
+import { Adapter } from "next-auth/adapters";
+import { createClient } from "@supabase/supabase-js";
+import {
+  supabaseURL,
+  supabaseAnon,
+  supabaseKEY,
+  googleClientID,
+  googleClientSecret,
+  githubClientID,
+  githubClientSecret,
+} from "@/lib/constant";
 
-const googleClientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-const googleClientSecret = process.env.NEXT_PUBLIC_GOOGLE_SECRET_ID || "";
-const githubClientID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "";
-const githubClientSecret = process.env.NEXT_PUBLIC_GITHUB_SECRET_ID || "";
+const supabase = createClient(supabaseURL, supabaseAnon, {
+  db: { schema: "next-auth" },
+});
 export const authOption: NextAuthOptions = {
+  adapter: SupabaseAdapter({
+    url: supabaseURL,
+    secret: supabaseKEY,
+  }) as Adapter,
   pages: {
     signIn: "/",
   },
   secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
     // 백엔드서버에서 토큰발급하기 그리고 밑에서 덮어쓰기
     // async signIn({ user, account, profile }) {
@@ -21,21 +37,20 @@ export const authOption: NextAuthOptions = {
     //     method: "POST",
     //     body: { userId: user.id },
     //   });
-
     //   if (tokenResponse.status === "success") {
     //     const tokenData = tokenResponse.data;
-    //     user.token = tokenData.token;
+    //     user.to = tokenData.token;
     //     return true;
     //   }
     //   return false;
     // },
     jwt({ token, user }) {
+      // console.log("URL : ", supabaseURL, "key : ", supabaseKEY);
       if (user) {
         token.role = user.role;
       }
       return token;
     },
-
     session({ token, session, newSession, user }) {
       session.user.role = token.role as RoleType;
       return session;
@@ -57,44 +72,55 @@ export const authOption: NextAuthOptions = {
         password: { value: "12312411", type: "password", label: "password" },
       },
       async authorize(credentials, req) {
-        const body = {
-          id: credentials?.email,
-          password: credentials?.password,
-        };
-        try {
-          const authResponse = await CombineFetch<User>({
-            path: "/api/login",
-            body,
-            method: "POST",
-          });
-          if (authResponse.status === "success") {
-            //쿠키 핸들링
-            // let setCookie = authResponse.header?.set("Set-Cookie");
-            // if (setCookie) {
-            //   const parsed = cookie.parse(setCookie);
-            //   cookies().set("connect.sid", parsed["connect.sid"], parsed); // 브라우저에 쿠키를 심기
-            // }
-            const { email, id, image, nickname, role } = authResponse.data;
-            console.log({
-              id,
-              email,
-              name: nickname,
-              image,
-              role,
-            });
-            return {
-              id,
-              email,
-              name: nickname,
-              image,
-              role,
-            };
-          } else {
-            return null;
-          }
-        } catch (error) {
-          throw new Error(error as any);
+        if (!(credentials?.email && credentials.password)) {
+          return null;
         }
+        const { email, password } = credentials;
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.signInWithPassword({ email, password });
+        console.log(user);
+        console.log("message : ", error?.message);
+        if (!user) {
+          return null;
+        }
+
+        // .from("users")
+        // .select("*")
+        // .eq("email", credentials?.email)
+        // .single();
+
+        // // 비밀번호 검증
+        // const isValid = bcrypt.compareSync(
+        //   credentials?.password,
+        //   user.password
+        // );
+
+        // if (!isValid) throw new Error("Incorrect password");
+
+        // // 여기서 사용자 정보를 데이터베이스에 저장하는 로직 구현 (신규 사용자인 경우)
+        // if (!user) {
+        //   const { error: insertError } = await supabase.from("users").insert([
+        //     {
+        //       email: credentials?.email,
+        //       password: bcrypt.hashSync(
+        //         credentials?.password,
+        //         10
+        //       ),
+        //     },
+        //   ]);
+
+        //   if (insertError)
+        //     throw new Error("An error occurred while inserting user data.");
+        // }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: "asd",
+          image: "asd",
+        };
       },
     }),
     GoogleProvider({
