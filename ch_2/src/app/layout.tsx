@@ -8,6 +8,7 @@ import Provider from "./providers";
 import { MSWComponent } from "@/lib/msw/MswHooks";
 import { getServerSession } from "next-auth";
 import { authOption } from "./api/auth/[...nextauth]/route";
+import { Toaster } from "@/components/ui/toaster";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <Provider>
           <ModeToggle />
           <Suspense>{children}</Suspense>
+          <Toaster />
         </Provider>
       </body>
     </html>

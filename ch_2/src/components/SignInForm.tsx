@@ -15,6 +15,7 @@ import { signIn } from "next-auth/react";
 const SignInForm = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<z.infer<typeof SignInFormSchema>>({
     mode: "onSubmit",
     resolver: zodResolver(SignInFormSchema),
@@ -26,17 +27,20 @@ const SignInForm = () => {
 
   const onSubmit = form.handleSubmit(
     async (values: z.infer<typeof SignInFormSchema>) => {
+      setIsLoading(true);
       try {
         const res = await signIn("credentials", {
           email: values.이메일,
           password: values.비밀번호,
-          redirect: false,
+          callbackUrl: "/home",
         });
         if (res?.ok) {
-          router.push("/home");
+          // router.push("/home");
         }
       } catch (error) {
         throw new Error(error as any);
+      } finally {
+        setIsLoading(false);
       }
     }
   );
@@ -51,7 +55,7 @@ const SignInForm = () => {
   };
 
   const onClickSocialLogin = async (type: "google" | "github") => {
-    console.log(type);
+    setIsLoading(true);
     try {
       const res = await signIn(type, {});
 
@@ -60,6 +64,8 @@ const SignInForm = () => {
       }
     } catch (error) {
       throw new Error(error as any);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +79,7 @@ const SignInForm = () => {
                 variant="outline"
                 type="button"
                 onClick={() => onClickSocialLogin("github")}
+                disabled={isLoading}
               >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
@@ -81,6 +88,7 @@ const SignInForm = () => {
                 variant="outline"
                 type="button"
                 onClick={() => onClickSocialLogin("google")}
+                disabled={isLoading}
               >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
@@ -122,6 +130,7 @@ const SignInForm = () => {
                     className="w-full"
                     type="button"
                     onClick={handleSignInStep}
+                    disabled={isLoading}
                   >
                     다음
                   </Button>
@@ -129,6 +138,7 @@ const SignInForm = () => {
                     className="w-full"
                     type="button"
                     onClick={() => router.push("/signup")}
+                    disabled={isLoading}
                   >
                     이메일로 회원가입
                   </Button>
