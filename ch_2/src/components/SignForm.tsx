@@ -10,15 +10,18 @@ import { useState, useTransition } from "react";
 import NextArrow from "./icon/NextArrow";
 import { Passwordfields, Signfields, SignformSchema } from "@/lib/constant";
 import SignFormItem from "./SignFormItem";
-import { useFormState, useFormStatus } from "react-dom";
 import { SignAction } from "@/lib/action/auth/action";
 import { useRouter } from "next/navigation";
+import { useToast } from "./ui/use-toast";
+import { signIn } from "next-auth/react";
+import { checkUserExists } from "@/lib/action/auth/user";
 
 export function ProfileForm() {
-  const { pending } = useFormStatus();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const router = useRouter();
+
   const form = useForm<z.infer<typeof SignformSchema>>({
     resolver: zodResolver(SignformSchema),
     defaultValues: {
@@ -33,23 +36,51 @@ export function ProfileForm() {
 
   const onSubmit = form.handleSubmit(
     (values: z.infer<typeof SignformSchema>) => {
-      startTransition(() => {
+      startTransition(async () => {
         switch (currentStep) {
           case 1:
             setCurrentStep(2);
-
+            break;
           case 2:
-            SignAction(values);
+            {
+              const register = await SignAction(values);
+              if (register.message === "회원가입성공") {
+                toast({
+                  description: register.message,
+                  variant: "destructive",
+                  duration: 2000,
+                });
+                try {
+                  const res = await signIn("credentials", {
+                    email: values.이메일,
+                    password: values.비밀번호,
+                    callbackUrl: "/home",
+                  });
+                  if (res?.ok) {
+                    // router.push("/home");
+                  }
+                } catch (error) {
+                  throw error;
+                }
+              } else if (register.message === "이메일이 중복 되었습니다.") {
+                form.setError("이메일", {
+                  message: register.message,
+                });
+                toast({
+                  description: register.message,
+                  variant: "destructive",
+                  duration: 2000,
+                });
+                setCurrentStep(1);
+              }
+            }
+            break;
           default:
             break;
         }
       });
     }
   );
-
-  // const onSubmit = (values: z.infer<typeof SignformSchema>) => {
-
-  // };
 
   const handleNextStep = async () => {
     const { trigger } = form;
