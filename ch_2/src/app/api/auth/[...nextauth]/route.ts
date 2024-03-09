@@ -1,11 +1,10 @@
-import { CombineFetch } from "@/lib/action";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { SupabaseAdapter } from "@auth/supabase-adapter";
 import { Adapter } from "next-auth/adapters";
-import { createClient } from "@supabase/supabase-js";
+
 import {
   supabaseURL,
   supabaseAnon,
@@ -15,10 +14,7 @@ import {
   githubClientID,
   githubClientSecret,
 } from "@/lib/constant";
-
-const supabase = createClient(supabaseURL, supabaseAnon, {
-  db: { schema: "next-auth" },
-});
+import { authenticateUser } from "@/lib/action/auth/user";
 export const authOption: NextAuthOptions = {
   adapter: SupabaseAdapter({
     url: supabaseURL,
@@ -28,31 +24,31 @@ export const authOption: NextAuthOptions = {
     signIn: "/",
   },
   secret: process.env.NEXTAUTH_SECRET,
-
+  logger: {
+    error: (err) => console.log(err),
+  },
   callbacks: {
-    // 백엔드서버에서 토큰발급하기 그리고 밑에서 덮어쓰기
-    // async signIn({ user, account, profile }) {
-    //   const tokenResponse = await CombineFetch<{ token: string }>({
-    //     path: "/api/token",
-    //     method: "POST",
-    //     body: { userId: user.id },
-    //   });
-    //   if (tokenResponse.status === "success") {
-    //     const tokenData = tokenResponse.data;
-    //     user.to = tokenData.token;
-    //     return true;
-    //   }
-    //   return false;
-    // },
-    jwt({ token, user }) {
-      // console.log("URL : ", supabaseURL, "key : ", supabaseKEY);
+    async jwt({ token, user, account }) {
       if (user) {
+        // console.log("user : ", user, "token : ", token, "account : ", account);
+        token.uid = user.id;
         token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
+        token.picture = user.image;
       }
+      // console.log("token : ", token);
       return token;
     },
-    session({ token, session, newSession, user }) {
-      session.user.role = token.role as RoleType;
+    async session({ session, token, user }) {
+      console.log("--------------------------------");
+      if (token.uid) {
+        // console.log("session : ", session, "token : ", token);
+        session.user.email = token.email;
+        session.user.image = token.picture;
+        session.user.name = token.name;
+        // session.user.role =
+      }
       return session;
     },
   },
@@ -75,52 +71,11 @@ export const authOption: NextAuthOptions = {
         if (!(credentials?.email && credentials.password)) {
           return null;
         }
-        const { email, password } = credentials;
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.signInWithPassword({ email, password });
-        console.log(user);
-        console.log("message : ", error?.message);
-        if (!user) {
-          return null;
-        }
-
-        // .from("users")
-        // .select("*")
-        // .eq("email", credentials?.email)
-        // .single();
-
-        // // 비밀번호 검증
-        // const isValid = bcrypt.compareSync(
-        //   credentials?.password,
-        //   user.password
-        // );
-
-        // if (!isValid) throw new Error("Incorrect password");
-
-        // // 여기서 사용자 정보를 데이터베이스에 저장하는 로직 구현 (신규 사용자인 경우)
-        // if (!user) {
-        //   const { error: insertError } = await supabase.from("users").insert([
-        //     {
-        //       email: credentials?.email,
-        //       password: bcrypt.hashSync(
-        //         credentials?.password,
-        //         10
-        //       ),
-        //     },
-        //   ]);
-
-        //   if (insertError)
-        //     throw new Error("An error occurred while inserting user data.");
-        // }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: "asd",
-          image: "asd",
-        };
+        const response = await authenticateUser(
+          credentials.email,
+          credentials.password
+        );
+        return response;
       },
     }),
     GoogleProvider({
