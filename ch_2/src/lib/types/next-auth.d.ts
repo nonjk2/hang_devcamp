@@ -8,7 +8,7 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
 
-  interface JWT extends DefaultJWT {
+  interface DefaultJWT {
     role?: RoleType;
   }
 
