@@ -1,13 +1,23 @@
 import AuthProfileForm from "@/components/AuthProfileForm";
+import { Button } from "@/components/ui/button";
 import { authOption } from "@/lib/action/auth/authoption";
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 
 const page = async () => {
   const session = await getServerSession(authOption);
 
   return (
     <section>
-      <AuthProfileForm session={session!} />
+      {session ? (
+        <AuthProfileForm session={session!} />
+      ) : (
+        <div className="flex gap-2 p-6">
+          <Link href={"/"}>
+            <Button variant={"default"}>로그인</Button>
+          </Link>
+        </div>
+      )}
     </section>
   );
 };
