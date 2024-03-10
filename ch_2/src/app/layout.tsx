@@ -7,9 +7,9 @@ import { ModeToggle } from "@/components/DarkModeBtn";
 import Provider from "./providers";
 import { MSWComponent } from "@/lib/msw/MswHooks";
 import { getServerSession } from "next-auth";
-import { authOption } from "./api/auth/[...nextauth]/route";
 import { Toaster } from "@/components/ui/toaster";
 import ClipLoader from "react-spinners/ClipLoader";
+import { authOption } from "@/lib/action/auth/authoption";
 
 const fontSans = FontSans({
   subsets: ["latin"],

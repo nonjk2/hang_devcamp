@@ -1,5 +1,5 @@
-import { authOption } from "@/app/api/auth/[...nextauth]/route";
 import AuthProfileForm from "@/components/AuthProfileForm";
+import { authOption } from "@/lib/action/auth/authoption";
 import { getServerSession } from "next-auth";
 
 const page = async () => {
