@@ -52,7 +52,7 @@ export async function getUserByEmail(email: string) {
     .from("users")
     .select("*")
     .eq("email", email)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Error fetching user:", error);
