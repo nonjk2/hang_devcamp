@@ -85,7 +85,7 @@ export const authOption: NextAuthOptions = {
     }),
     GoogleProvider({
       clientId: googleClientID,
-      clientSecret: process.env.GOOGLE_SECRET_ID ?? googleClientSecret,
+      clientSecret: googleClientSecret,
     }),
     GitHubProvider({
       clientId: githubClientID,

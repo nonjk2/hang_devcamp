@@ -35,19 +35,18 @@ const SignInForm = () => {
         const res = await signIn("credentials", {
           email: values.이메일,
           password: values.비밀번호,
-          callbackUrl: "/home",
-          redirect: false,
         });
         if (res?.ok) {
           return router.push("/home");
+        } else if (!res?.ok) {
+          setIsLoading(false);
+          setCurrentStep(1);
+          form.reset();
+          toast({
+            description: "이메일 비밀번호를 확인해주세요",
+            variant: "destructive",
+          });
         }
-        setIsLoading(false);
-        setCurrentStep(1);
-        form.reset();
-        toast({
-          description: "이메일 비밀번호를 확인해주세요",
-          variant: "destructive",
-        });
       } catch (error) {
         setIsLoading(false);
         throw new Error(error as any);
