@@ -1,6 +1,8 @@
 # 배운 점
 
-## 1. nextjs 의 route를 활용한 인증로직 및 소셜로그인 로직 변화
+## DAY4
+
+### 1. nextjs 의 route를 활용한 인증로직 및 소셜로그인 로직 변화
 
 - 기존에 react에서 쓰던 소셜로그인 로직은
   1. 프론트에서 인가코드를 가져오고 백엔드에 전달
@@ -36,7 +38,7 @@ nextjs 는 클라이언트 컴포넌트 내에서 사용자정보를 가져오�
 4. 그이후 해당 사용자세션 즉 정보를 조회할수있는(route) 비동기 Hook 을 자체적으로 만들어주어 클라이언트에서 쉽게 사용자를 확인할수있다.
 5. 반대로 서버컴포넌트에서도 자체적으로 확인하여 세션을 확인가능하다.
 
-## 2. user 타입
+### 2. user 타입
 
 - nextauth는 자체적으로 User의 타입이 정해져 있었는데 role 이나 token을 받아오고싶었다.
   그러기위해서 타입을 뒤졌으나 없는것을 확인하였고 Docs를 확인해보니 타입을 커스텀해서 쓰라고 적혀있었다.
@@ -62,5 +64,34 @@ declare module "next-auth" {
     token?: string;
     role?: RoleType;
   }
+}
+```
+
+## DAY5
+
+trouble
+
+1. nextjs api route에서 next-auth authoption 을 export 하고 세션을 사용하는곳에 임포트를 하여 사용하려 시도 했으나 에러가떴다.
+
+- **해결**
+  - nextjs의 route.ts는 http메서드만 내보낼 수 있었다. 별도 파일 분리를 하여 해당 파일에서 임포트
+
+2. 아이디 비밀번호 혹은 소셜로그인 버튼을 눌렀을때에 로딩state 즉, 비동기함수가 끝나도(loading이 false가 되어도) 다음페이지까지가는데에 시간이 걸렸다(아마도 다음페이지를 로드 혹은 다음 페이지에서 쓰는 비동기 컴포넌트에서 가져오는 세션을 로드하는데 걸리는시간)
+   그 시간동안 user는 로딩창이 넘어가고도 가만히 로그인창을 보고있었어야했는데 어차피 page를 떠나니까 finally대신 로딩을 계속주었다.
+   - 이페이지는 페이지를 떠나면 컴포가 없어지므로 cleanup함수에 써주지않았다.
+
+```tsx
+try{
+  //...
+
+if(res.ok){
+
+}else if(!res.ok)
+  setLoading(false)
+}catch(){
+  setLoading(false)
+}
+finally{
+// setLoading(false) x
 }
 ```
