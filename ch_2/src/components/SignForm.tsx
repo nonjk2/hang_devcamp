@@ -14,7 +14,6 @@ import { SignAction } from "@/lib/action/auth/action";
 import { useRouter } from "next/navigation";
 import { useToast } from "./ui/use-toast";
 import { signIn } from "next-auth/react";
-import { checkUserExists } from "@/lib/action/auth/user";
 
 export function ProfileForm() {
   const { toast } = useToast();
@@ -47,7 +46,6 @@ export function ProfileForm() {
               if (register.message === "회원가입성공") {
                 toast({
                   description: register.message,
-                  variant: "destructive",
                   duration: 2000,
                 });
                 try {
