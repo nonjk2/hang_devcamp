@@ -6,6 +6,11 @@ interface Product {
 interface ProductInfo {
   name: string;
   price: string;
+  productId: string;
   image: string;
   size: string;
+}
+
+interface ProductWithCount extends Product {
+  count: number;
 }
