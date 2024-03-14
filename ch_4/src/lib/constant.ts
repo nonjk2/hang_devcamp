@@ -24,6 +24,32 @@ const Passwordfields = [
   },
 ];
 
+const CouponSchemas = z.object({
+  쿠폰타입: z.enum(["fixedAmount", "percentDiscount"], {
+    required_error: "쿠폰타입을 선택해주세요.",
+  }),
+  쿠폰설명: z.string().min(2, { message: "설명은 2글자 이상이어야 합니다." }),
+  쿠폰할인율: z.string().min(2, { message: "쿠폰할인값을 적어주세요" }),
+  쿠폰넘버: z
+    .string()
+    .min(10, { message: "쿠폰번호는 10글자 이상이어야 합니다." }),
+});
+
+const Counponfield = [
+  {
+    name: "쿠폰넘버",
+    placeholder: "012034012040",
+  },
+  {
+    name: "쿠폰설명",
+    placeholder: "50프로 할인쿠폰입니다.",
+  },
+  {
+    name: "쿠폰할인율",
+    placeholder: "숫자로 입력해주세요",
+  },
+];
+
 const SignformSchema = z
   .object({
     이름: z.string().min(2, { message: "이름은 2글자 이상이어야 합니다." }),
@@ -70,6 +96,8 @@ const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseKEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 export {
+  Counponfield,
+  CouponSchemas,
   Signfields,
   SignformSchema,
   Passwordfields,
