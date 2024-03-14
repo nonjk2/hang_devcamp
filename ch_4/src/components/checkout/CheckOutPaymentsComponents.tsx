@@ -10,8 +10,10 @@ import {
   CheckOutPaymentComponent,
 } from ".";
 import { useCheckout } from "./CheckoutProvider";
+import { useToast } from "../ui/use-toast";
 
 const CheckOutPaymentsComponents = () => {
+  const { toast } = useToast();
   const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null);
   const { checkoutInfo } = useCheckout();
   const { couponCost, items, point, totalCost, deliveryCost } = checkoutInfo;
@@ -83,7 +85,7 @@ const CheckOutPaymentsComponents = () => {
         })
         .then((data) => console.log());
     } catch (err) {
-      console.log(err);
+      toast({ description: `${err}`, duration: 2000 });
     }
   }, []);
 
