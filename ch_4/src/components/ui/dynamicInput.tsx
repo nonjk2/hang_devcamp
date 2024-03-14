@@ -55,7 +55,7 @@ const DynamicInput = forwardRef<HTMLInputElement, InputProps>(
           <div className="absolute flex-row w-full h-full justify-between">
             <div
               className={`truncate input-transition leading-6 transition-all ${
-                disabled || value.length >= 1 || active
+                String(value).length > 1 || disabled || active
                   ? "text-xs pt-2"
                   : "text-[17px] pt-4"
               } ${
@@ -69,10 +69,12 @@ const DynamicInput = forwardRef<HTMLInputElement, InputProps>(
             <div className="flex flex-row items-center w-full text-[17px] leading-6 bg-background">
               <Input
                 ref={ref}
+                value={value}
                 disabled={disabled}
                 required={required}
                 autoFocus={autoFocus}
                 type={type}
+                dynamic
                 placeholder={active ? placeholder : ""}
                 onFocus={() => setActive(true)}
                 onBlur={(e) => {

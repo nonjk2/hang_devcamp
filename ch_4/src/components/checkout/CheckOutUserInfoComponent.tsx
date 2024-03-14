@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 
-const CheckOutUserInfoComponent = ({ user }: { user: User }) => {
+const CheckOutUserInfoComponent = ({ user }: { user: authUser }) => {
   return (
     <Card className="rounded-sm">
       <CardHeader>
