@@ -3,9 +3,7 @@ import { DefaultJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
-    user: {
-      role?: RoleType;
-    } & DefaultSession["user"];
+    user: authUser;
   }
 
   interface DefaultJWT {
@@ -13,6 +11,12 @@ declare module "next-auth" {
   }
 
   interface User extends DefaultUser {
+    role?: RoleType;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface DefaultJWT {
     role?: RoleType;
   }
 }
