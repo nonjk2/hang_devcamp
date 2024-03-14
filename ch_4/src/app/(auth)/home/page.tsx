@@ -18,6 +18,9 @@ const page = async () => {
           <Link href={"/"}>
             <Button variant={"default"}>로그인</Button>
           </Link>
+          <Link href={"/"}>
+            <Button variant={"default"}>장바구니</Button>
+          </Link>
         </div>
       )}
     </section>
