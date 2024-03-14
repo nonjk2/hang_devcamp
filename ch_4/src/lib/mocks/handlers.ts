@@ -1,7 +1,7 @@
 import { http, HttpResponse, StrictResponse } from "msw";
 import { faker } from "@faker-js/faker";
 
-const User: User[] = [
+const User: authUser[] = [
   {
     id: "87e9fba7-3733-400b-bb88-866e0fe24541",
     nickname: "eundol",
