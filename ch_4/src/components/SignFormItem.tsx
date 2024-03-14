@@ -3,6 +3,7 @@
 import { ReactElement, ReactNode } from "react";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,6 +31,7 @@ interface SignFormItemProps {
   type?: "text" | "password" | "select";
   options?: Option[];
   disabled?: boolean;
+  description?: string;
 }
 
 const SignFormItem = ({
@@ -39,6 +41,7 @@ const SignFormItem = ({
   options,
   type = "text",
   disabled = false,
+  description,
 }: SignFormItemProps) => {
   const renderFormControl = (
     type: string,
@@ -99,6 +102,7 @@ const SignFormItem = ({
           <FormControl>
             {renderFormControl(type, field, placeholder, options)}
           </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
           {error && <FormMessage>{error.message}</FormMessage>}
         </FormItem>
       )}
