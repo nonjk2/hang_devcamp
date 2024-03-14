@@ -21,24 +21,24 @@ const CheckOutFinalPayAgreeComponent = ({
     purchaseTerms: false,
   });
 
-  const handleAllAgreeChange = (checked: CheckedState) => {
-    if (checked === "indeterminate") return;
-    setAllAgreed(checked);
-    setAgreements({
-      purchaseTerms: checked,
-    });
-  };
+  // const handleAllAgreeChange = (checked: CheckedState) => {
+  //   if (checked === "indeterminate") return;
+  //   setAllAgreed(checked);
+  //   setAgreements({
+  //     purchaseTerms: checked,
+  //   });
+  // };
 
-  const handleAgreementChange = (checked: CheckedState) => {
-    if (checked === "indeterminate") return;
-    setAgreements({
-      purchaseTerms: checked,
-    });
+  // const handleAgreementChange = (checked: CheckedState) => {
+  //   if (checked === "indeterminate") return;
+  //   setAgreements({
+  //     purchaseTerms: checked,
+  //   });
 
-    if (agreements.purchaseTerms) {
-      setAllAgreed(false);
-    }
-  };
+  //   if (agreements.purchaseTerms) {
+  //     setAllAgreed(false);
+  //   }
+  // };
   return (
     <Card className="rounded-none min-w-[350px] p-0">
       {/* <CardHeader>

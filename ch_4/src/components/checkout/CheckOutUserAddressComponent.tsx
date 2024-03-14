@@ -43,7 +43,7 @@ const scriptUrl =
 
 const CheckOutUserAddressComponent = ({
   user,
-  Addresses = [],
+  Addresses = [] as UserAddressResponse[],
 }: {
   user: authUser;
   Addresses?: UserAddressResponse[];
@@ -53,9 +53,8 @@ const CheckOutUserAddressComponent = ({
   const [isLoaing, setLoading] = useState(false);
   const [addressInputValue, setAddressInputValue] =
     useState<addressInputValue>(defaultInputValue);
-  const [addressSelect, setAddressSelect] = useState<string>(
-    String(Addresses[0].id) || "0"
-  );
+  // const selectedAddress = Addresses[0].id ?? null;
+  const [addressSelect, setAddressSelect] = useState<string | null>();
   const onChangeHandler = (e: string) => {
     // setPayState(e.target)
     setAddressSelect(e);
@@ -143,7 +142,7 @@ const CheckOutUserAddressComponent = ({
             {Addresses ? (
               <RadioGroup
                 onValueChange={onChangeHandler}
-                value={String(addressSelect)}
+                value={String(addressSelect) ?? ""}
                 className="flex mt-1 w-full flex-wrap gap-0"
               >
                 {Addresses.map((e, i) => (

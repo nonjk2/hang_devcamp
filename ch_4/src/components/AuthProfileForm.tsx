@@ -14,6 +14,8 @@ import { MouseEventHandler } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { RoleTypeName } from "@/lib/types/enum";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 const AuthProfileForm = ({ session }: { session: Session }) => {
   const router = useRouter();
@@ -22,7 +24,7 @@ const AuthProfileForm = ({ session }: { session: Session }) => {
     signOut({ redirect: false }).then(() => router.push("/"));
   };
   return (
-    <div className="flex p-6 gap-2">
+    <div className="flex p-6 gap-5">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Avatar className="cursor-pointer">
@@ -52,6 +54,10 @@ const AuthProfileForm = ({ session }: { session: Session }) => {
           </span>
         )}
       </div>
+
+      <Link href={"/checkout"}>
+        <Button variant={"default"}>장바구니</Button>
+      </Link>
     </div>
   );
 };

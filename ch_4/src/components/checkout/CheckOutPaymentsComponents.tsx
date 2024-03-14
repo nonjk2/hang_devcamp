@@ -3,7 +3,7 @@ import {
   PaymentWidgetInstance,
   loadPaymentWidget,
 } from "@tosspayments/payment-widget-sdk";
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import {
   CheckOutAccountComponent,
   CheckOutFinalPayAgreeComponent,
@@ -65,13 +65,12 @@ const CheckOutPaymentsComponents = () => {
     );
   }, [totalPrice]);
 
-  const onClickPaymentHandler = async () => {
+  const onClickPaymentHandler = useCallback(async () => {
     const paymentWidget = paymentWidgetRef.current;
     if (paymentWidget) {
-      const paymentAgreement = paymentWidget.renderAgreement("#agreement");
-      if (!paymentAgreement.getAgreementStatus().agreedRequiredTerms) return;
+      // const paymentAgreement = paymentWidget.renderAgreement("#agreement");
+      // if (!paymentAgreement.getAgreementStatus().agreedRequiredTerms) return;
     }
-
     try {
       const res = await paymentWidget
         ?.requestPayment({
@@ -86,7 +85,7 @@ const CheckOutPaymentsComponents = () => {
     } catch (err) {
       console.log(err);
     }
-  };
+  }, []);
 
   return (
     <>
