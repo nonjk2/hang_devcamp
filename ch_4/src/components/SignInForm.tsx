@@ -35,10 +35,15 @@ const SignInForm = () => {
         const res = await signIn("credentials", {
           email: values.이메일,
           password: values.비밀번호,
+          redirect: false,
         });
-        if (res?.ok) {
-          return router.push("/home");
+
+        if (res && res.ok) {
+          console.log("상태 : ", res);
+          router.push("/home");
+          router.refresh();
         } else if (!res?.ok) {
+          console.log("asdasdasdasd");
           setIsLoading(false);
           setCurrentStep(1);
           form.reset();
@@ -46,6 +51,7 @@ const SignInForm = () => {
             description: "이메일 비밀번호를 확인해주세요",
             variant: "destructive",
           });
+          return;
         }
       } catch (error) {
         setIsLoading(false);
