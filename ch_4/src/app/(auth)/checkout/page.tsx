@@ -8,35 +8,50 @@ import {
   CheckOutPaymentComponent,
   CheckOutFinalPayAgreeComponent,
 } from "@/components/checkout";
-import { mockCoupons, mockData } from "@/lib/mocks/mockData";
+import CheckOutPaymentsComponents from "@/components/checkout/CheckOutPaymentsComponents";
+import { authOption } from "@/lib/action/auth/authoption";
+import {
+  userGetDeliveryAddress,
+  usersHasCoupons,
+} from "@/lib/action/auth/user";
+import { mockData } from "@/lib/mocks/mockData";
+import { getServerSession } from "next-auth";
+import { cache } from "react";
 
-const MOCK_USER: User = {
-  email: "hong@gildong.com",
-  id: "asdfsaf",
-  image: null,
-  nickname: "홍길동",
-  phone: "01099999999",
-  // address: null,
-};
+const userDeliveryAddress = cache(async (userId: string) =>
+  userGetDeliveryAddress(userId)
+);
 
-const MOCK_USER_HAS_POINTS = {
-  coupons: mockCoupons,
-  point: 2300,
-};
-
+const userHasGetCoupons = cache(async (userId: string) =>
+  usersHasCoupons(userId)
+);
 const CheckOutPage = async () => {
+  const userSession = await getServerSession(authOption);
+  if (!userSession) {
+    return null;
+  }
+  const userHasCoupons = await userHasGetCoupons(userSession.user.id);
+  const userdelAddress: UserAddressResponse[] = await userDeliveryAddress(
+    userSession.user.id
+  );
+
   return (
     <CheckoutProvider productData={mockData}>
       <div className="flex flex-col gap-4 grow">
         <CheckOutItemsComponent />
-        <CheckOutUserInfoComponent user={MOCK_USER} />
-        <CheckOutUserAddressComponent user={MOCK_USER} />
-        <CheckOutCouponComponent {...MOCK_USER_HAS_POINTS} />
+        <CheckOutUserInfoComponent user={userSession.user} />
+        <CheckOutUserAddressComponent
+          user={userSession.user}
+          Addresses={userdelAddress}
+        />
+        <CheckOutCouponComponent
+          point={2300}
+          coupons={userHasCoupons.data?.map((e) => e.coupons)!}
+          user={userSession.user}
+        />
       </div>
       <div className="flex flex-col gap-4">
-        <CheckOutAccountComponent />
-        <CheckOutPaymentComponent />
-        <CheckOutFinalPayAgreeComponent />
+        <CheckOutPaymentsComponents />
       </div>
 
       {/* <CheckOutItemsComponent />
