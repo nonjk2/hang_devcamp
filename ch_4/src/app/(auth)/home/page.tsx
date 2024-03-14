@@ -10,7 +10,9 @@ const page = async () => {
   return (
     <section>
       {session ? (
-        <AuthProfileForm session={session!} />
+        <div className="px-10 max-w-7xl m-auto">
+          <AuthProfileForm session={session!} />
+        </div>
       ) : (
         <div className="flex gap-2 p-6">
           <Link href={"/"}>
