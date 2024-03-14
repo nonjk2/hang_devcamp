@@ -51,7 +51,7 @@ const CheckOutAccountComponent = () => {
         <span className="text-blue-500">
           {formatPrice(String(rewardPoint))}
         </span>
-        <span> 포인트 적립예정</span>
+        <span className="text-black"> 포인트 적립예정</span>
       </div>
     </Card>
   );
