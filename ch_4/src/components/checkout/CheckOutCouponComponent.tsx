@@ -8,42 +8,50 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/select";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { Icons } from "../icon";
 import { Button } from "../ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { useCheckout } from "./CheckoutProvider";
 import { Input } from "../ui/input";
+import { CombineFetch } from "@/lib/action";
+import { useToast } from "../ui/use-toast";
+import ClipLoader from "../ui/spinner";
 
 interface HasCouponsAndPointInterface {
-  coupons: Coupon[];
+  coupons: ResponseCoupontype[];
   point: number;
+  user: authUser;
 }
 
 const CheckOutCouponComponent = ({
   coupons: userCouponData,
+  user,
   point,
 }: HasCouponsAndPointInterface) => {
-  const [coupons, setCoupons] = useState<Coupon[]>(userCouponData);
-  const [currentCoupons, setCurrentCoupons] = useState<Coupon>();
-  const [lookUpCoupon, setLookUpCoupon] = useState<string>();
+  const { toast } = useToast();
+  const [loading, setloading] = useState(false);
+  const [coupons, setCoupons] = useState<ResponseCoupontype[]>(userCouponData);
+  const [currentCoupons, setCurrentCoupons] = useState<ResponseCoupontype>();
+  const [lookUpCoupon, setLookUpCoupon] = useState<string>("");
   const { checkoutInfo, updateCheckoutInfo } = useCheckout();
   const [pointValue, setPointValue] = useState(0);
 
   // 쿠폰선택핸들러
   const onValueChange: (value: string) => void = (e) => {
-    let currentCoupon = coupons.find((coupons) => coupons.id === e);
+    let currentCoupon = coupons.find((coupons) => String(coupons.id) === e);
     setCurrentCoupons(currentCoupon);
   };
 
   // 쿠폰적용핸들러
   const onClickCouponHandler = () => {
     const { totalCost } = checkoutInfo;
+
     let couponCost = 0;
-    if (currentCoupons?.couponType === "fixedAmount") {
-      couponCost = currentCoupons.couponValue;
-    } else if (currentCoupons?.couponType === "percentDiscount") {
-      couponCost = totalCost / currentCoupons.couponValue;
+    if (currentCoupons?.coupon_type === "fixedAmount") {
+      couponCost = currentCoupons.coupon_value;
+    } else if (currentCoupons?.coupon_type === "percentDiscount") {
+      couponCost = totalCost / currentCoupons.coupon_value;
     }
     updateCheckoutInfo({ ...checkoutInfo, couponCost });
   };
@@ -55,11 +63,35 @@ const CheckOutCouponComponent = ({
   };
   // };
   // 쿠폰확인 핸들러
+
   const onClickCouponLookUpHandler = async () => {
-    // 쿠폰 db 확인
-    // const realCoupon = await superbase
-    // if (lookUpCoupon === ) {
-    // }
+    setloading(true);
+    try {
+      const res = await CombineFetch<
+        { message: string },
+        { couponsNumber: string; userId: string }
+      >({
+        path: "/api/coupon/user",
+        method: "POST",
+        body: {
+          couponsNumber: lookUpCoupon,
+          userId: user.id,
+        },
+      });
+
+      if (res.status === "success") {
+        // 리액트쿼리 입히기
+        setLookUpCoupon("");
+        toast({
+          description: res.data.message,
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setloading(false);
+    }
   };
 
   // 포인트 취소핸들러
@@ -67,6 +99,21 @@ const CheckOutCouponComponent = ({
     updateCheckoutInfo({ ...checkoutInfo, point: 0 });
     setPointValue(0);
   };
+
+  const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    let inputValue = e.target.value;
+
+    while (inputValue.length > 1 && inputValue.startsWith("0")) {
+      inputValue = inputValue.substring(1);
+    }
+    const value = Number(inputValue);
+    if (value > point) {
+      return setPointValue(point);
+    }
+    console.log(inputValue);
+    setPointValue(value);
+  };
+
   return (
     <Card className="rounded-none min-w-[500px]">
       <CardHeader>
@@ -85,14 +132,17 @@ const CheckOutCouponComponent = ({
                 <SelectContent>
                   <SelectItem value={"null"}>{"사용안함"}</SelectItem>
                   {coupons.map((e) => (
-                    <SelectItem value={e.id} key={e.id}>
-                      {e.couponName}
+                    <SelectItem value={String(e.id)} key={e.id}>
+                      {e.coupon_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={onClickCouponHandler} className="focus:ring-0">
+            <Button
+              onClick={onClickCouponHandler}
+              className="focus:ring-0 w-20"
+            >
               쿠폰적용
             </Button>
           </div>
@@ -112,9 +162,10 @@ const CheckOutCouponComponent = ({
             </div>
             <Button
               onClick={onClickCouponLookUpHandler}
-              className="focus:ring-0"
+              className="focus:ring-0 w-20"
+              disabled={loading}
             >
-              번호 확인
+              {loading ? <ClipLoader color="#36d7b7" size={20} /> : "번호 확인"}
             </Button>
           </div>
         </div>
@@ -127,10 +178,10 @@ const CheckOutCouponComponent = ({
               <Input
                 placeholder="사용할 포인트 입력"
                 className="grow focus-visible:ring-offset-0 focus-visible:ring-0  border-none"
-                // value={pointValue}
+                value={pointValue}
                 type="number"
-                // onChange={onChangeHandler}
-                defaultValue={pointValue}
+                onChange={onChangeHandler}
+                // defaultValue={pointValue}
               />
               {pointValue !== 0 && (
                 <div
@@ -141,7 +192,7 @@ const CheckOutCouponComponent = ({
                 </div>
               )}
             </div>
-            <Button onClick={onClickPointHandler} className="focus:ring-0">
+            <Button onClick={onClickPointHandler} className="focus:ring-0 w-20">
               전액 사용
             </Button>
           </div>
