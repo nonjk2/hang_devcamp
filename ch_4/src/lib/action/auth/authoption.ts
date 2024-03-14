@@ -13,6 +13,7 @@ import { authenticateUser } from "./user";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
+import { createClient } from "@supabase/supabase-js";
 
 export const authOption: NextAuthOptions = {
   adapter: SupabaseAdapter({
@@ -27,13 +28,6 @@ export const authOption: NextAuthOptions = {
     error: (err) => console.log(err),
   },
   callbacks: {
-    //   async redirect({ url, baseUrl }) {
-    //   // 로그인 실패 시 사용자를 로그인 페이지로 리다이렉트하고, 에러 메시지를 쿼리 파라미터에 추가
-    //   if (url === '/api/auth/signin?error=CredentialsSignin') {
-    //     return `${baseUrl}/signin?error=로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.`;
-    //   }
-    //   return baseUrl;
-    // },
     async jwt({ token, user, account }) {
       if (user) {
         // console.log("user : ", user, "token : ", token, "account : ", account);
@@ -49,9 +43,11 @@ export const authOption: NextAuthOptions = {
     async session({ session, token, user }) {
       if (token.uid) {
         // console.log("session : ", session, "token : ", token);
+        session.user.id = token.uid as string;
         session.user.email = token.email;
         session.user.image = token.picture;
-        session.user.name = token.name;
+        session.user.nickname = token.name;
+        session.user.role = token.role;
         // session.user.role =
       }
       return session;
