@@ -1,19 +1,22 @@
+import { userGetDeliveryAddress } from "./auth/user";
 import { handleHttpError, isError } from "./errorhandle";
 export const ensureStartsWith = (stringToCheck: string, startsWith: string) =>
   stringToCheck.startsWith(startsWith)
     ? stringToCheck
     : `${startsWith}${stringToCheck}`;
-const domain = process.env.EUNDOL_DOMAIN
-  ? ensureStartsWith(process.env.EUNDOL_DOMAIN, "https://")
-  : "http://localhost:9090";
-const key = process.env.EUNDOLFRONT_ACCESS_TOKEN!;
+const domain = process.env.NEXT_PUBLIC_EUNDOL_DOMAIN ?? "";
+// ? ensureStartsWith(process.env.NEXT_PUBLIC_EUNDOL_DOMAIN, "https://")
+// : "http://localhost:3000";
 
-type FetchOptions = {
+// const key = process.env.EUNDOLFRONT_ACCESS_TOKEN!;
+
+type FetchOptions<TBody> = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   headers?: HeadersInit;
-  body?: any;
+  body?: TBody;
   cache?: RequestCache;
   path?: string;
+  next?: NextFetchRequestConfig;
 };
 
 type Success<T> = {
@@ -28,13 +31,14 @@ type Failure = {
 
 type Result<T> = Success<T> | Failure;
 
-export async function CombineFetch<T>({
+export async function CombineFetch<T, TBody>({
   path,
   method = "GET",
   headers,
   body,
+  next,
   cache = "default",
-}: FetchOptions): Promise<Result<T>> {
+}: FetchOptions<TBody>): Promise<Result<T>> {
   const endpoint = `${domain}${path}`;
   try {
     const result = await fetch(endpoint, {
@@ -46,6 +50,7 @@ export async function CombineFetch<T>({
       },
       body: JSON.stringify(body),
       cache,
+      next,
     });
 
     if (!result.ok) {
