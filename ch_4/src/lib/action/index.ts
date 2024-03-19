@@ -17,6 +17,7 @@ type FetchOptions<TBody> = {
   cache?: RequestCache;
   path?: string;
   next?: NextFetchRequestConfig;
+  db?: boolean;
 };
 
 type Success<T> = {
@@ -37,9 +38,10 @@ export async function CombineFetch<T, TBody>({
   headers,
   body,
   next,
-  cache = "default",
+  cache = "force-cache",
+  db = false,
 }: FetchOptions<TBody>): Promise<Result<T>> {
-  const endpoint = `${domain}${path}`;
+  const endpoint = db ? `${path}` : `${domain}${path}`;
   try {
     const result = await fetch(endpoint, {
       method,

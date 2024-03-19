@@ -10,3 +10,10 @@ interface UserAddress {
 interface UserAddressResponse extends UserAddress {
   id: number;
 }
+
+type status = "success" | "failure";
+
+interface responseObject {
+  message: string;
+  status: status;
+}

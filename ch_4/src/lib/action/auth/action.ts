@@ -4,6 +4,9 @@ import { SignformSchema } from "@/lib/constant";
 import { z } from "zod";
 import { RoleTypeNameConvert } from "@/lib/types/enum";
 import { checkUserExists, createUser } from "./user";
+import { CombineFetch } from "..";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { setTimeout } from "timers/promises";
 
 export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
   const {
@@ -41,4 +44,39 @@ export const SignAction = async (formData: z.infer<typeof SignformSchema>) => {
   // if (res.status === "success") {
   //   await setTimeout(2000);
   // }
+};
+
+export const onClickCouponLookUpHandler = async (
+  userId: string,
+  prevState: any,
+  formData: FormData
+): Promise<responseObject> => {
+  "use server";
+  const couponsNumber = (formData.get("coupon") as string) ?? "";
+
+  try {
+    const res = await CombineFetch<
+      { message: string },
+      { couponsNumber: string; userId: string }
+    >({
+      path: "/api/coupon/user",
+      method: "POST",
+      body: {
+        couponsNumber,
+        userId,
+      },
+    });
+    if (res.status === "success") {
+      revalidatePath("/checkout");
+      revalidateTag("coupons");
+      if (res.data.message !== "쿠폰이 등록되었습니다") {
+        return { message: res.data.message, status: "failure" };
+      }
+      return { message: res.data.message, status: res.status };
+    } else {
+      return { message: res.error, status: res.status };
+    }
+  } catch (error) {
+    throw error;
+  }
 };
