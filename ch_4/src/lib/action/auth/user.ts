@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { CombineFetch } from "..";
 const bcrypt = require("bcryptjs");
 
 const supabase = createClient(
@@ -176,41 +177,77 @@ export async function getMyCoupons(id: string): Promise<any> {
       .select("*")
       .eq("issued_by", id);
     if (error) {
-      console.error("Error fetching user:", error);
+      console.error("쿠폰 Error fetching user:", error);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error("Authentication error : ", error);
+    console.error("쿠폰 Authentication error : ", error);
     return { message: "다시 시도 하세요" };
   }
 }
 
 // 유저가 가진쿠폰
+// export async function usersHasCoupons(
+//   id: string
+// ): Promise<{ message: string; data?: UserCoupon[] }> {
+//   try {
+//     const { data, error } = await supabase
+//       .from("user_coupons")
+//       .select(
+//         `
+//         *,
+//         coupons (
+//           *
+//         )
+//         `
+//       )
+//       .eq("user_id", id)
+//       .eq("coupon_use", false); // 사용되지 않은 쿠폰만 조회
+
+//     if (error) {
+//       console.error("Error fetching unused user coupons:", error);
+//       return { message: "다시 시도 하세요" };
+//     }
+//     return { message: "사용되지 않은 쿠폰 정보 조회 성공", data };
+//   } catch (error) {
+//     console.error("Error retrieving unused user coupons:", error);
+//     return {
+//       message: "서버 오류로 사용되지 않은 쿠폰 정보 조회에 실패했습니다.",
+//     };
+//   }
+// }
+
 export async function usersHasCoupons(
   id: string
 ): Promise<{ message: string; data?: UserCoupon[] }> {
-  try {
-    const { data, error } = await supabase
-      .from("user_coupons")
-      .select(
-        `
-        *,
-        coupons (
-          *
-        )
-        `
-      )
-      .eq("user_id", id)
-      .eq("coupon_use", false); // 사용되지 않은 쿠폰만 조회
+  const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-    if (error) {
-      console.error("Error fetching unused user coupons:", error);
-      return { message: "다시 시도 하세요" };
+  try {
+    const response = await CombineFetch<UserCoupon[], null>({
+      path: `${supabaseURL}/rest/v1/user_coupons?select=*,coupons(*)&user_id=eq.${id}&coupon_use=eq.false`,
+      headers: {
+        apikey: supabaseKey,
+        // Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+      next: { tags: ["coupons"] },
+      cache: "no-store",
+      db: true,
+      method: "GET",
+    });
+
+    if (response.status === "failure") {
+      // 서버에서 오류 응답을 받은 경우
+
+      return { message: response.error };
     }
-    revalidatePath("/checkout");
-    return { message: "사용되지 않은 쿠폰 정보 조회 성공", data };
+    return {
+      message: "사용되지 않은 쿠폰 정보 조회 성공",
+      data: response.data,
+    };
   } catch (error) {
     console.error("Error retrieving unused user coupons:", error);
     return {
@@ -218,6 +255,7 @@ export async function usersHasCoupons(
     };
   }
 }
+
 // 쿠폰 확인후 등록
 export async function userAddCoupon({
   couponsNumber,
@@ -266,6 +304,6 @@ export async function userAddCoupon({
   if (userCouponError) {
     return { message: "쿠폰 등록 오류" };
   }
-
+  revalidatePath("/checkout");
   return { message: "쿠폰이 등록되었습니다" };
 }

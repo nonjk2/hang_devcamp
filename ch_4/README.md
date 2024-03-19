@@ -34,7 +34,7 @@
 
 ## 캐싱
 
-- supabase의 fetch로직을 찾아 캐싱을 시키고 캐시업데이트하는 로직을 해 UI빠른업데이트를 노렸으나 실패 supabase의 fetch로직을 아직도 모르겠음,,,
+-
 - react-query나 SWR로 진행 예정
 
 ## 패칭

@@ -11,6 +11,10 @@ export async function middleware(req: NextRequest) {
     url.pathname = "/home";
     return NextResponse.redirect(url);
   }
+  // console.log("session ", session);
+  // // if (!session && session) {
+
+  // // }
 
   return NextResponse.next();
 }
