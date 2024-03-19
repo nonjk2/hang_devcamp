@@ -10,9 +10,11 @@ const layout = async ({
   admin: ReactNode;
 }) => {
   const session = await getServerSession(authOption);
-  if (!session?.user) {
-    <main>{children}</main>;
+  const isAdmin = session?.user.role === "admin";
+  console.log("isAdmin : ", isAdmin);
+  if (isAdmin) {
+    return <main>{admin}</main>;
   }
-  return <main>{session?.user.role === "admin" ? admin : children}</main>;
+  return <main>{children}</main>;
 };
 export default layout;
