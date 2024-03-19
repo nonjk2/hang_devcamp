@@ -14,9 +14,7 @@ import { Button } from "../ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { useCheckout } from "./CheckoutProvider";
 import { Input } from "../ui/input";
-import { CombineFetch } from "@/lib/action";
-import { useToast } from "../ui/use-toast";
-import ClipLoader from "../ui/spinner";
+import LookUpCoupons from "./childcomponent/LookUpCoupons";
 
 interface HasCouponsAndPointInterface {
   coupons: ResponseCoupontype[];
@@ -25,15 +23,11 @@ interface HasCouponsAndPointInterface {
 }
 
 const CheckOutCouponComponent = ({
-  coupons: userCouponData,
+  coupons,
   user,
   point,
 }: HasCouponsAndPointInterface) => {
-  const { toast } = useToast();
-  const [loading, setloading] = useState(false);
-  const [coupons, setCoupons] = useState<ResponseCoupontype[]>(userCouponData);
   const [currentCoupons, setCurrentCoupons] = useState<ResponseCoupontype>();
-  const [lookUpCoupon, setLookUpCoupon] = useState<string>("");
   const { checkoutInfo, updateCheckoutInfo } = useCheckout();
   const [pointValue, setPointValue] = useState(0);
 
@@ -62,37 +56,6 @@ const CheckOutCouponComponent = ({
     updateCheckoutInfo({ ...checkoutInfo, point });
   };
   // };
-  // 쿠폰확인 핸들러
-
-  const onClickCouponLookUpHandler = async () => {
-    setloading(true);
-    try {
-      const res = await CombineFetch<
-        { message: string },
-        { couponsNumber: string; userId: string }
-      >({
-        path: "/api/coupon/user",
-        method: "POST",
-        body: {
-          couponsNumber: lookUpCoupon,
-          userId: user.id,
-        },
-      });
-
-      if (res.status === "success") {
-        // 리액트쿼리 입히기
-        setLookUpCoupon("");
-        toast({
-          description: res.data.message,
-          duration: 2000,
-        });
-      }
-    } catch (error) {
-      throw error;
-    } finally {
-      setloading(false);
-    }
-  };
 
   // 포인트 취소핸들러
   const onClickCloseHandler = () => {
@@ -110,7 +73,7 @@ const CheckOutCouponComponent = ({
     if (value > point) {
       return setPointValue(point);
     }
-    console.log(inputValue);
+
     setPointValue(value);
   };
 
@@ -149,27 +112,7 @@ const CheckOutCouponComponent = ({
         </div>
 
         {/* 쿠폰 번호 입력 */}
-        <div className="flex flex-col w-full gap-2">
-          <span className="text-sm">쿠폰 번호</span>
-          <div className="flex justify-between gap-2">
-            <div className="grow">
-              <Input
-                placeholder="쿠폰 번호 입력"
-                className="focus-visible:ring-0"
-                value={lookUpCoupon}
-                onChange={(e) => setLookUpCoupon(e.target.value)}
-              />
-            </div>
-            <Button
-              onClick={onClickCouponLookUpHandler}
-              className="focus:ring-0 w-20"
-              disabled={loading}
-            >
-              {loading ? <ClipLoader color="#36d7b7" size={20} /> : "번호 확인"}
-            </Button>
-          </div>
-        </div>
-
+        <LookUpCoupons user={user} />
         {/* 포인트 입력 */}
         <div className="flex flex-col w-full gap-2">
           <span className="text-sm">포인트</span>
@@ -196,15 +139,14 @@ const CheckOutCouponComponent = ({
               전액 사용
             </Button>
           </div>
-        </div>
-
-        <div className="flex flex-col">
-          <div className="text-sm flex gap-1">
-            <p>보유 포인트</p>
-            <p className="font-semibold">{formatPrice(String(point))}</p>
-          </div>
-          <div className="text-sm flex text-gray-400">
-            <p>5,000 포인트 이상 보유 및 10,000원 이상 구매시 사용가능</p>
+          <div className="flex flex-col">
+            <div className="text-sm flex gap-1">
+              <p>보유 포인트</p>
+              <p className="font-semibold">{formatPrice(String(point))}</p>
+            </div>
+            <div className="text-sm flex text-gray-400">
+              <p>5,000 포인트 이상 보유 및 10,000원 이상 구매시 사용가능</p>
+            </div>
           </div>
         </div>
       </CardContent>
