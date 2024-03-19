@@ -10,12 +10,12 @@ const AdminCouponList = ({
       case "fixedAmount":
         return {
           coupon_type: "정액제",
-          coupon_value: coupon.coupon_value + "%",
+          coupon_value: coupon.coupon_value + "원",
         };
       case "percentDiscount":
         return {
           coupon_type: "정액률",
-          coupon_value: coupon.coupon_value + "원",
+          coupon_value: coupon.coupon_value + "%",
         };
       default:
         return {
