@@ -4,9 +4,6 @@ import {
   CheckOutUserInfoComponent,
   CheckOutUserAddressComponent,
   CheckOutCouponComponent,
-  CheckOutAccountComponent,
-  CheckOutPaymentComponent,
-  CheckOutFinalPayAgreeComponent,
 } from "@/components/checkout";
 import CheckOutPaymentsComponents from "@/components/checkout/CheckOutPaymentsComponents";
 import { authOption } from "@/lib/action/auth/authoption";
@@ -17,21 +14,17 @@ import {
 import { mockData } from "@/lib/mocks/mockData";
 import { getServerSession } from "next-auth";
 import { cache } from "react";
-import { setTimeout } from "timers/promises";
 
 const userDeliveryAddress = cache(async (userId: string) =>
   userGetDeliveryAddress(userId)
 );
 
-const userHasGetCoupons = cache(async (userId: string) =>
-  usersHasCoupons(userId)
-);
 const CheckOutPage = async () => {
   const userSession = await getServerSession(authOption);
   if (!userSession) {
     return null;
   }
-  const userHasCoupons = await userHasGetCoupons(userSession.user.id);
+  const userHasCoupons = await usersHasCoupons(userSession.user.id);
   const userdelAddress: UserAddressResponse[] = await userDeliveryAddress(
     userSession.user.id
   );
@@ -54,9 +47,6 @@ const CheckOutPage = async () => {
       <div className="flex flex-col gap-4">
         <CheckOutPaymentsComponents />
       </div>
-
-      {/* <CheckOutItemsComponent />
-      <CheckOutItemsComponent /> */}
     </CheckoutProvider>
   );
 };
